@@ -14,4 +14,5 @@ for p in loc.iterdir():
         print(p)
         if p.is_file():
             print("true")
-            print(open(str(p), 'r').read())
+            if str(p).__contains__(".txt"):
+                print(open(str(p), 'r').read())
