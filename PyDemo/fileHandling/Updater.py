@@ -3,8 +3,10 @@ from pathlib import Path
 
 file_dir_in_root = []
 file_list_in_root = []
+selected_files = []
 rootpath = ""
 fileName = ""
+
 
 def get_root_path():
     path = input("Please enter root folder path:")
@@ -13,10 +15,12 @@ def get_root_path():
 
 
 def load_files_in_path(path):
+    global fileName
     loc = Path(path)
     for p in loc.iterdir():
         if p.is_file():
-            file_list_in_root.append(p)
+            if p.name.startswith(fileName):
+                file_list_in_root.append(p)
         elif p.is_dir():
             file_dir_in_root.append(p)
 
@@ -39,6 +43,7 @@ def print_choice(choice1, list1):
     print("You have selected:")
     for k in choice1:
         print(str(k)+". "+str(list1[k-1]))
+        selected_files.append(list1[k-1])
 
 
 def get_file_to_process():
@@ -61,6 +66,24 @@ def confirm():
         return confirm()
 
 
+def select_files():
+    print("Please select files from below to process.")
+    print("Enter file numbers in comma separated values e.g. 1,5,4")
+    count = 1
+    for i in file_list_in_root:
+        print(" "+str(count)+". "+str(i))
+        count += 1
+
+    selected = input("Selected files:")
+    choice = check_choice(selected)
+    print("You selected files: " + selected)
+    if confirm():
+        print_choice(choice, file_list_in_root)
+    else:
+        select_files()
+
+
+############ starting flow ################
 # get root directory path
 rootpath = get_root_path()
 print(rootpath)
@@ -72,21 +95,9 @@ fileName = get_file_to_process()
 # load files/directory names from root path
 load_files_in_path(rootpath)
 print("Root directory {} has {} files and {} directories".format(rootpath,file_list_in_root.__len__(),
-                                                                 file_list_in_root.__len__()))
+                                                                 file_dir_in_root.__len__()))
 feed = input("Please Enter any key to proceed:")
 
 # select files
-print("Please select files from below to process.")
-print("Enter file numbers in comma separated values e.g. 1,5,4")
-count = 1
-for i in file_list_in_root:
-    print(" "+str(count)+". "+str(i))
-    count += 1
+select_files()
 
-selectedFiles = input("Selected files:")
-choice = check_choice(selectedFiles)
-print("You selected files: " + selectedFiles)
-confirm = input("Enter Y to confirm or N to select files again:")
-
-if confirm == 'Y' or confirm == 'y':
-    print_choice(choice, file_list_in_root)
