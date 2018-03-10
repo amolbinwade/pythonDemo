@@ -4,6 +4,7 @@ from pathlib import Path
 file_dir_in_root = []
 file_list_in_root = []
 selected_files = []
+selected_dirs = []
 rootpath = ""
 fileName = ""
 
@@ -39,11 +40,11 @@ def check_choice(inp):
     return vals1
 
 
-def print_choice(choice1, list1):
+def print_choice(choice1, list1, selected_list):
     print("You have selected:")
     for k in choice1:
         print(str(k)+". "+str(list1[k-1]))
-        selected_files.append(list1[k-1])
+        selected_list.append(list1[k-1])
 
 
 def get_file_to_process():
@@ -67,6 +68,7 @@ def confirm():
 
 
 def select_files():
+    global selected_files
     print("Please select files from below to process.")
     print("Enter file numbers in comma separated values e.g. 1,5,4")
     count = 1
@@ -78,9 +80,27 @@ def select_files():
     choice = check_choice(selected)
     print("You selected files: " + selected)
     if confirm():
-        print_choice(choice, file_list_in_root)
+        print_choice(choice, file_list_in_root,selected_files)
     else:
         select_files()
+
+
+def select_directories():
+    global selected_dirs
+    print("Please select directories from below to process.")
+    print("Enter directory numbers in comma separated values e.g. 1,5,4")
+    count = 1
+    for i in file_dir_in_root:
+        print(" "+str(count)+". "+str(i))
+        count += 1
+
+    selected = input("Selected files:")
+    choice = check_choice(selected)
+    print("You selected files: " + selected)
+    if confirm():
+        print_choice(choice, file_dir_in_root, selected_dirs)
+    else:
+        select_directories()
 
 
 ############ starting flow ################
@@ -99,5 +119,9 @@ print("Root directory {} has {} files and {} directories".format(rootpath,file_l
 feed = input("Please Enter any key to proceed:")
 
 # select files
-select_files()
+if file_list_in_root.__len__() > 0:
+    select_files()
+
+# select directories
+select_directories()
 
