@@ -60,10 +60,10 @@ def get_root_path():
                 print(str(count) + '. ' + o)
                 count +=1
         selected = input("Enter number of the root path which you want to use. "
-                     "Or if you want to specify some other path then type N: ")
+                     "Or if you want to specify some other path then type N: "+"\n" + ">>")
         if selected != 'N' and selected != 'n':
             return options[int(selected)-1]
-    path = input("Please enter root directory path:")
+    path = input("Please enter root directory path:"+ "\n" +">>")
     check_input_exit(path)
     populate_root_dir_options(path)
     return path
@@ -102,11 +102,11 @@ def check_input_exit(val):
         exit("User ended program.")
 
 
-def check_choice(inp):
+def check_choice(inp, max1):
     vals = str(inp).split(',')
     vals1 = []
     for i in vals:
-        if 0 < int(i) < 100:
+        if 0 < int(i) < max1+1:
             vals1.append(int(i))
     return vals1
 
@@ -125,7 +125,7 @@ def populate_selected_list(choice1, list1, selected_list):
 
 def get_file_to_process():
     filename = input("Please enter the filename you want to process. "
-                     "For example input test* for updating test-dev.txt, test-dit2.txt, etc.")
+                     "For example input test* for updating test-dev.txt, test-dit2.txt, etc." + "\n" +">>")
     lineSep()
     print("You entered {} as file to process.".format(filename))
     if confirm():
@@ -135,7 +135,7 @@ def get_file_to_process():
 
 
 def confirm():
-    confirm1 = input("Enter Y to confirm or N to enter the input again:")
+    confirm1 = input("Enter Y to confirm or N to enter the input again:"+"\n"+">>")
     lineSep()
     if confirm1 == 'Y' or confirm1 == 'y':
         return True
@@ -155,9 +155,9 @@ def select_files():
         count += 1
 
     print("(file numbers in comma separated values e.g. 1,5,4)")
-    selected = input("Select files:")
+    selected = input("Select files:"+ "\n" +">>")
     lineSep()
-    choice = check_choice(selected)
+    choice = check_choice(selected, count)
     print("You selected files: " + selected)
     if confirm():
         print_choice(choice, file_list_in_root, selected_files)
@@ -174,9 +174,9 @@ def select_directories():
         print(" "+str(count)+". "+str(i))
         count += 1
     print("(directory numbers in comma separated values e.g. 1,5,4)")
-    selected = input("Select directories:")
+    selected = input("Select directories:"+ "\n" +">>")
     lineSep()
-    choice = check_choice(selected)
+    choice = check_choice(selected, count)
     print("You selected directories: " + selected)
     if confirm():
         print_choice(choice, file_dir_in_root, selected_dirs)
@@ -187,14 +187,19 @@ def select_directories():
 
 def select_envs():
     print("Please select for which environments the file {} to be updated.".format(fileName))
-    count = 1
-    for i in envs:
-        print(" "+str(count)+". "+str(i))
-        count += 1
+    count = 0
+
+    while count < len(envs):
+        env = ''
+        for i in range(1, 5):
+            if count < len(envs):
+                env += "{}. {}{}".format(count+1, envs[count], '\t'*5)
+                count += 1
+        print(env)
     print("(environment numbers in comma separated values e.g. 1,5,4)")
-    selected = input("Select environments:")
+    selected = input("Select environments:"+ "\n" +">>")
     lineSep()
-    choice = check_choice(selected)
+    choice = check_choice(selected, count)
     print("You selected environments: " + selected)
     if confirm():
         print_choice(choice, envs, selected_envs)
@@ -210,9 +215,9 @@ def select_config_value(values):
         print(" "+str(count)+". "+str(i))
         count += 1
     print("(enter number of correct value.)")
-    selected = input("Select Value:")
+    selected = input("Select Value:"+ "\n" +">>")
     lineSep()
-    choice = check_choice(selected)
+    choice = check_choice(selected, count)
     print("You selected value: " + selected)
     if confirm():
         print_choice(choice, values, None)
@@ -230,7 +235,7 @@ def populate_files_in_sel_dirs():
                 if p.is_file():
                     if p.name.startswith(fileName):
                         file_list_in_sel_dirs.append(p)
-                    elif p.is_dir():
+                elif p.is_dir():
                         load_all_files_in_path(p, file_list_in_sel_dirs)
 
 
@@ -242,14 +247,32 @@ def populate_files_after_env_filter():
                 if p.is_file():
                     if p.name.startswith(fileName):
                         for k in selected_envs:
-                            if k in p.name:
+                            if k+'_' in p.name:
                                 file_list_in_selected_envs.append(p)
-                    elif p.is_dir():
+                elif p.is_dir():
                         load_all_files_in_path(p, file_list_in_selected_envs)
 
 
+def populate_files_after_env_filter_new():
+    if selected_dirs.__len__() > 0:
+        for dir1 in selected_dirs:
+            populate_files_after_env_filter_from_dir(dir1)
+
+
+def populate_files_after_env_filter_from_dir(dir1):
+    loc = Path(dir1)
+    for p in loc.iterdir():
+        if p.is_file():
+            if p.name.startswith(fileName):
+                for k in selected_envs:
+                    if k+'.' in p.name:
+                        file_list_in_selected_envs.append(p)
+        elif p.is_dir():
+            populate_files_after_env_filter_from_dir(p)
+
+
 def enter_to_proceed():
-    feed = input("Please Enter any key to proceed:")
+    feed = input("Please Enter any key to proceed:"+ "\n" +">>")
     print("...............................................")
 
 
@@ -259,6 +282,11 @@ def lineSep():
 
 def stepSep():
     print("===============================================")
+
+
+def print_empty_lines():
+    print('\n')
+    print('\n')
 
 
 def populate_root_dir_options(rootdir):
@@ -301,7 +329,7 @@ def fetch_envs_new():
 def fetch_config_update_option():
     print("Enter full path of configuration that need to be added/updated.")
     print("(E.g. config.xyz.abc)")
-    config = input("Enter configuration name:")
+    config = input("Enter configuration name:"+ "\n" +">>")
     action = fetch_update_action(config)
     values = fetch_possible_values(config)
     update_item = UpdateItem(action, config, values)
@@ -311,7 +339,7 @@ def fetch_config_update_option():
 def fetch_update_action(config):
     print("What needs to be done on {}".format(config))
     print("1. Add")
-    action = input("Enter option:")
+    action = input("Enter option:"+ "\n" +">>")
     if action == '1':
         return UpdateItem.ADD
     else:
@@ -324,14 +352,14 @@ def fetch_possible_values(config):
     print("How you want to enter possible values for {}".format(config))
     print("1. From pre-populated input files.")
     print("2. Enter comma separated value. ")
-    action = input("Enter option:")
+    action = input("Enter option:"+ "\n" +">>")
     lineSep()
     if action == '1':
-        file_path = input("Enter root folder path for pre-populated input files")
-        file_name = input("Enter file name filter (Starting characters of file name):")
+        file_path = input("Enter root folder path for pre-populated input files"+ "\n" +">>")
+        file_name = input("Enter file name filter (Starting characters of file name):"+ "\n" +">>")
         return UpdateItem.fetch_possible_values_from_files(file_path, file_name)
     elif action == '2':
-        values = input("Enter comma separated possible values:")
+        values = input("Enter comma separated possible values:"+ "\n" +">>")
         vals = values.split(',')
         return vals
     else:
@@ -343,7 +371,7 @@ def filesep():
     print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 
-def loop_for_files_updation():
+def loop_for_files_update():
     count = 1
     for f in file_list_in_selected_envs:
         filesep()
