@@ -38,6 +38,7 @@ up.stepSep()
 print("Step 2: Enter file to be updated.")
 up.stepSep()
 up.fileName = up.get_file_to_process()
+up.file_type = up.get_file_type()
 
 
 # load files/directory names from root path

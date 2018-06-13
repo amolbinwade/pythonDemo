@@ -14,11 +14,13 @@ config_options = []
 selected_config_options = []
 rootpath = ""
 fileName = ""
+file_type = ''
 update_items = []
 
 
 class UpdateItem:
     ADD = "ADD"
+    UPDATE = "UPDATE"
     # configPath = None
     # action = None
     # possible_values = []
@@ -125,7 +127,7 @@ def populate_selected_list(choice1, list1, selected_list):
 
 def get_file_to_process():
     filename = input("Please enter the filename you want to process. "
-                     "For example input test* for updating test-dev.txt, test-dit2.txt, etc." + "\n" +">>")
+                     "For example input test for updating test-dev.txt, test-dit2.txt, etc." + "\n" +">>")
     lineSep()
     print("You entered {} as file to process.".format(filename))
     if confirm():
@@ -133,6 +135,16 @@ def get_file_to_process():
     else:
         return get_file_to_process()
 
+
+def get_file_type():
+    file_type_a = input("Please enter the file type you want to process. "
+                     "For example input xml or properties" + "\n" +">>")
+    lineSep()
+    print("You entered {} as file type to process.".format(file_type_a))
+    if confirm():
+        return file_type_a
+    else:
+        return get_file_type()
 
 def confirm():
     confirm1 = input("Enter Y to confirm or N to enter the input again:"+"\n"+">>")
@@ -339,9 +351,12 @@ def fetch_config_update_option():
 def fetch_update_action(config):
     print("What needs to be done on {}".format(config))
     print("1. Add")
+    print("2. Update")
     action = input("Enter option:"+ "\n" +">>")
     if action == '1':
         return UpdateItem.ADD
+    elif action == '2':
+        return UpdateItem.UPDATE
     else:
         print("Invalid selection")
         return fetch_update_action(config)
@@ -386,10 +401,62 @@ def loop_for_files_update():
 
 def update_file(file, config_path, action, selected_value):
     if action == 'ADD':
-        act = 'Added'
+        add_config(file, config_path, selected_value)
     else:
         act = 'Updated'
-    print("Updated {}. {} configuration {} with value = {}".format(file, act, config_path, selected_value))
 
+
+def add_config(file, config_path, selected_value):
+    if file_type == 'xml':
+        add_to_xml_file(file, config_path, selected_value)
+
+
+def add_to_xml_file(file, config_path, selected_value):
+    elements = str(config_path).split('.')
+    current = 0
+    update_open = False
+    update_end = False
+    update_done = False
+    val = ''
+    count = len(elements)
+    f = open(file, 'r')
+    new_file = open(file+'n', 'w')
+    for line in f.readlines():
+        if not update_open:
+            if line.__contains__('<' + elements[current]):
+                current += 1
+                if current == (count):
+                    update_open = True
+                    start_index = line.find('<'+elements[current-1]+'>')
+                    val = line[0:start_index] + '<'+elements[current-1]+'>' + '\n'+'\t'*count + selected_value + '\n'
+                    # start_index = line.find('<'+elements[current-1]+'>')
+                    # start_index = start_index + len('<'+elements[current-1]+'>')
+                    if line.__contains__('</'+elements[current-1]+'>'):
+                        start_index = line.find('</'+elements[current-1]+'>')
+                        start_index1 = start_index + len('</'+elements[current-1]+'>')
+                        val = val + '\n'+ '</'+elements[current-1]+'>'
+                        val = val + line[start_index1:len(line)]
+                        update_end = True
+        if update_open and not update_end:
+            if line.__contains__('</'+elements[current-1]+'>'):
+                val = val +line[0:start_index]+ '</'+elements[current-1]+'>'
+                start_index = line.find('</'+elements[current-1]+'>')
+                start_index = start_index + len('</'+elements[current-1]+'>')
+                val = val + line[start_index:len(line)]
+                update_end = True
+        if not update_open:
+            new_file.write(line)
+        elif update_open and update_end and not update_done:
+            new_file.write(val)
+            update_done = True
+        elif update_done:
+            new_file.write(line)
+    f.close()
+    new_file.close()
+
+    print('Added config {} with value {} to file {}'.format(config_path, selected_value, file))
 
 # +++++++functions end here ++++++++++++++
+
+
+add_to_xml_file('/home/amol/temp/configs/APAC/fragments/config-file_dev1.txt', 'config.test.rest', 'wow')
